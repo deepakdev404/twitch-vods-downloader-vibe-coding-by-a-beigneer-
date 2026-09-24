@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VODLY — Twitch VOD Downloader</title>
+<meta name="description" content="A modern Twitch VOD downloading interface (frontend demo).">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header class="nav">
+  <a class="brand" href="#home" aria-label="VODLY home">
+    <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><rect width="24" height="24" rx="7" fill="#9146FF"/><path d="M9.5 7.5v9l7-4.5z" fill="#fff"/></svg>VODLY
+  </a>
+  <nav id="menu" aria-label="Main">
+    <a href="#home">Home</a><a href="#how">How it Works</a><a href="#features">Features</a><a href="#faq">FAQ</a>
+  </nav>
+  <div class="nav-actions">
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle light or dark theme">☀️</button>
+    <a class="btn" href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+    <button class="icon-btn burger" id="burger" type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="menu">☰</button>
+  </div>
+</header>
+
+<main id="home">
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <span class="badge">⚡ Fast • Precise • Simple</span>
+    <h1>Download Twitch VODs. Your Way.</h1>
+    <p>Paste a Twitch VOD link, choose the quality, select exactly the part you need, and get your clip ready to download.</p>
+  </section>
+
+  <!-- ===== Downloader card ===== -->
+  <section class="wrap">
+    <div class="card app" id="app">
+      <h2>Twitch VOD Downloader</h2>
+      <p class="muted">Paste a Twitch VOD URL to get started.</p>
+
+      <label class="sr" for="url">Twitch VOD URL</label>
+      <div class="field" id="urlField">
+        <svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.43l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+        <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="https://www.twitch.tv/videos/123456789" aria-describedby="urlHint urlErr">
+        <button class="btn small" id="pasteBtn" type="button">Paste</button>
+      </div>
+      <p class="hint" id="urlHint">Supported format: twitch.tv/videos/...</p>
+      <p class="err" id="urlErr" role="alert"></p>
+      <button class="btn primary" id="analyzeBtn" type="button"><span class="spin"></span><span class="lbl">Analyze VOD</span></button>
+
+      <!-- Empty state (hidden after analysis) -->
+      <div class="empty" id="empty"><div aria-hidden="true">🎬</div><strong>Paste a Twitch VOD to get started</strong></div>
+
+      <!-- Advanced controls: revealed after analysis -->
+      <div class="work" id="work" hidden>
+        <div class="vod">
+          <img id="vThumb" alt="VOD thumbnail">
+          <div>
+            <span class="ok">✓ VOD found</span>
+            <h3 id="vTitle"></h3><p class="muted" id="vStreamer"></p>
+            <ul class="meta"><li>Duration <b id="vDur"></b></li><li>Date <b id="vDate"></b></li><li>Views <b id="vViews"></b></li></ul>
+          </div>
+        </div>
+
+        <div class="player" id="player">
+          <span class="tag">VOD PREVIEW</span>
+          <button class="bigplay" id="bigPlay" type="button" aria-label="Play preview">▶</button>
+          <div class="ctrl">
+            <button id="playBtn" type="button" aria-label="Play">▶</button>
+            <input type="range" id="seek" min="0" max="100" value="0" aria-label="Seek preview">
+            <span class="time" id="ptime">00:00:00 / 00:00:00</span>
+            <span aria-hidden="true">🔊</span><input type="range" id="vol" class="vol" min="0" max="100" value="70" aria-label="Volume">
+            <button id="fsBtn" type="button" aria-label="Fullscreen">⛶</button>
+          </div>
+        </div>
+
+        <h3 class="sec">Select the section you want to download</h3>
+        <div class="tl-scroll"><div class="tl-wrap">
+          <div class="tl-ends"><span>00:00:00</span><span id="tlEnd"></span></div>
+          <div class="track" id="track">
+            <div class="range" id="range"></div><div class="dim" id="dimL"></div><div class="dim" id="dimR"></div>
+            <div class="handle" id="hS" role="slider" tabindex="0" aria-label="Start time" aria-valuemin="0"></div>
+            <div class="handle end" id="hE" role="slider" tabindex="0" aria-label="End time" aria-valuemin="0"></div>
+          </div>
+        </div></div>
+        <p class="hint">Drag the handles, or focus one and use arrow keys (Shift = 1 min).</p>
+
+        <div class="times">
+          <div><label for="tS">Start Time</label><input id="tS" inputmode="numeric" autocomplete="off" placeholder="00:00:00"></div>
+          <div><label for="tE">End Time</label><input id="tE" inputmode="numeric" autocomplete="off" placeholder="00:00:00"></div>
+          <div class="stat"><span class="lab">Selected Duration</span><strong id="selDur">—</strong></div>
+        </div>
+        <p class="err" id="timeErr" role="alert"></p>
+
+        <h3 class="sec">Download Quality</h3>
+        <div class="qgrid" role="radiogroup" aria-label="Download quality">
+          <label class="q"><input type="radio" name="q" value="1080"><i class="dot"></i><b>1080p</b><em>Full HD</em><span class="qs"></span><small>Best quality</small></label>
+          <label class="q"><input type="radio" name="q" value="720" checked><i class="dot"></i><b>720p</b><em>HD</em><span class="qs"></span><small>Recommended</small></label>
+          <label class="q"><input type="radio" name="q" value="480"><i class="dot"></i><b>480p</b><em>SD</em><span class="qs"></span><small>Smaller file</small></label>
+          <label class="q"><input type="radio" name="q" value="360"><i class="dot"></i><b>360p</b><em>Low</em><span class="qs"></span><small>Fast download</small></label>
+        </div>
+
+        <h3 class="sec">Output Format</h3>
+        <div class="seg" role="radiogroup" aria-label="Output format">
+          <label><input type="radio" name="f" value="mp4" checked><span>MP4</span></label>
+          <label><input type="radio" name="f" value="webm"><span>WEBM</span></label>
+        </div>
+
+        <div class="est"><span class="lab">Estimated file size</span><strong id="estSize">—</strong><small id="estNote"></small></div>
+
+        <button class="btn primary big" id="dlBtn" type="button"><span class="spin"></span><span class="lbl">⬇ Download VOD</span></button>
+        <div class="status" id="status" hidden aria-live="polite"></div>
+        <p class="hint">Demo mode: processing is simulated in the browser. No real Twitch video is downloaded.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Recent downloads ===== -->
+  <section class="wrap reveal" id="history">
+    <div class="row"><h2>Recent Downloads</h2><button class="btn small" id="clearBtn" type="button">Clear History</button></div>
+    <div class="hist" id="histList"></div>
+  </section>
+
+  <!-- ===== Features ===== -->
+  <section class="wrap reveal" id="features">
+    <h2 class="c">Everything you need to grab the exact moment.</h2>
+    <div class="grid4">
+      <article class="card feat"><i aria-hidden="true">🎯</i><h3>Precise Timeline</h3><p>Select exactly where your download starts and ends.</p></article>
+      <article class="card feat"><i aria-hidden="true">⚡</i><h3>Fast Processing</h3><p>Designed for quick VOD processing.</p></article>
+      <article class="card feat"><i aria-hidden="true">🎥</i><h3>Multiple Qualities</h3><p>Choose the quality that fits your needs.</p></article>
+      <article class="card feat"><i aria-hidden="true">🔒</i><h3>Privacy Focused</h3><p>Keep the interface simple and avoid unnecessary account requirements.</p></article>
+    </div>
+  </section>
+
+  <!-- ===== How it works ===== -->
+  <section class="wrap reveal" id="how">
+    <h2 class="c">How it works</h2>
+    <ol class="steps">
+      <li><span class="num">01</span><h3>Paste</h3><p>Paste your Twitch VOD URL.</p></li>
+      <li><span class="num">02</span><h3>Customize</h3><p>Choose quality and select the exact timeline.</p></li>
+      <li><span class="num">03</span><h3>Download</h3><p>Generate your selected video section.</p></li>
+    </ol>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="wrap narrow reveal" id="faq">
+    <h2 class="c">Frequently asked questions</h2>
+    <div class="faq">
+      <div class="qa"><button type="button" aria-expanded="false">What is a Twitch VOD?</button><div class="ans"><div><p>A VOD (video on demand) is a saved recording of a past Twitch broadcast that viewers can watch later.</p></div></div></div>
+      <div class="qa"><button type="button" aria-expanded="false">Can I download only part of a VOD?</button><div class="ans"><div><p>Yes. Drag the timeline handles or type exact start and end timestamps to select just the section you need.</p></div></div></div>
+      <div class="qa"><button type="button" aria-expanded="false">What video qualities are supported?</button><div class="ans"><div><p>The interface offers 1080p, 720p, 480p and 360p in MP4 or WEBM. Real availability depends on how the original broadcast was encoded.</p></div></div></div>
+      <div class="qa"><button type="button" aria-expanded="false">Does this work on mobile?</button><div class="ans"><div><p>Yes. The layout adapts to phones and tablets, and the timeline supports touch dragging.</p></div></div></div>
+      <div class="qa"><button type="button" aria-expanded="false">Do I need to create an account?</button><div class="ans"><div><p>No. This interface doesn't ask for an account.</p></div></div></div>
+      <div class="qa"><button type="button" aria-expanded="false">Why does the demo not actually download a Twitch video?</button><div class="ans"><div><p>This frontend is a demonstration. Browsers can't reliably fetch and process Twitch VOD media on their own, so real retrieval needs an appropriate backend service. Any such service must comply with Twitch's terms, copyright rules, and the permissions of the content owner. Here the whole workflow is simulated and no real video is produced.</p></div></div></div>
+    </div>
+  </section>
+</main>
+
+<!-- ===== Footer ===== -->
+<footer>
+  <div class="foot">
+    <div>
+      <a class="brand" href="#home"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><rect width="24" height="24" rx="7" fill="#9146FF"/><path d="M9.5 7.5v9l7-4.5z" fill="#fff"/></svg>VODLY</a>
+      <p class="muted">A modern Twitch VOD downloading interface.</p>
+    </div>
+    <nav aria-label="Footer"><a href="#home">Privacy</a><a href="#home">Terms</a><a href="https://github.com" target="_blank" rel="noopener">GitHub</a><a href="#home">Contact</a></nav>
+  </div>
+  <p class="copy muted">© 2026 VODLY. All rights reserved.</p>
+</footer>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<script src="script.js"></script>
+</body>
+</html>
