@@ -106,6 +106,8 @@ Download or clone the repository and open:
 
 ```text
 index.html
+style.css
+script.js
 ```
 
 in your browser.
@@ -114,7 +116,7 @@ in your browser.
 
 1. Open the project in VS Code.
 2. Install the **Live Server** extension.
-3. Right-click `index.html`.
+3. Right-click `index.html` and you can also go with `style.css` $ `script.js` its make it cool.
 4. Select **Open with Live Server**.
 
 ---
